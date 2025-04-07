@@ -1,6 +1,5 @@
 const sqlite3 = require('sqlite3').verbose();
 
-// Додає користувача до черги
 function addToQueue(userId, userData, callback) {
   const db = new sqlite3.Database('./data/queuebot.db');
 
@@ -35,7 +34,6 @@ function addToQueue(userId, userData, callback) {
   );
 }
 
-// Видалити всі записи для користувача
 function cancelFromQueue(userId, callback) {
   const db = new sqlite3.Database('./data/queuebot.db');
 

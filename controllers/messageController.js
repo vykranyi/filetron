@@ -1,7 +1,8 @@
-const { sendQuickReplies } = require('../services/messengerService');
+const { sendQuickReplies, sendMessage } = require('../services/messengerService');
 const { handleAdminCommand } = require('../controllers/adminController');
 const { handleUserCommand } = require('../controllers/userFlowController');
-const { userMainMenu } = require('../utils/menus');
+const { mainMenuButtons } = require('../utils/menus');
+const { isWithinWorkingHours, getWorkingHoursMessage } = require('../utils/schedule');
 
 const PAGE_ID = process.env.PAGE_ID;
 const ADMIN_IDS = process.env.ADMINS.split(',').map(id => id.trim());
@@ -17,19 +18,27 @@ async function messageHandler(event, db) {
 
   const isAdmin = ADMIN_IDS.includes(senderId);
 
+  // 🕒 Графік роботи
+  if (!isWithinWorkingHours() && !isAdmin && command !== '/start' && command !== '/') {
+    return sendMessage(senderId, getWorkingHoursMessage());
+  }
+
+  // ▶️ Стартове меню
   if (command === '/start' || command === '/') {
     return sendQuickReplies(
       senderId,
       '👋 Bonjour ! Je suis le bot de file d’attente pour l’impression. Que souhaitez-vous faire ?',
-      userMainMenu
+      mainMenuButtons
     );
   }
 
+  // 🛠️ Адмін-команди
   if (isAdmin) {
     const isHandled = await handleAdminCommand(command, senderId, db);
     if (isHandled) return;
   }
 
+  // 👤 Користувач
   await handleUserCommand(command, senderId, db);
 }
 

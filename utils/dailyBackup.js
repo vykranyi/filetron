@@ -13,34 +13,28 @@ async function exportAndClearQueue(db) {
 
       const workbook = new ExcelJS.Workbook();
 
-      // Якщо файл існує — завантажити
       if (fs.existsSync(filePath)) {
         await workbook.xlsx.readFile(filePath);
       }
 
-      // Створити новий аркуш із датою
       const sheet = workbook.addWorksheet(dateStr);
 
-      // Заголовки
       sheet.columns = [
         { header: 'ID', key: 'id', width: 10 },
-        { header: 'User ID', key: 'userId', width: 25 },
-        { header: 'Імʼя', key: 'name', width: 20 },
-        { header: 'Формат', key: 'format', width: 10 },
-        { header: 'Сторінки', key: 'pages', width: 10 },
-        { header: 'Доставка', key: 'delivery', width: 15 },
-        { header: 'Створено', key: 'createdAt', width: 20 },
+        { header: 'ID utilisateur', key: 'userId', width: 25 },
+        { header: 'Nom', key: 'name', width: 20 },
+        { header: 'Format', key: 'format', width: 10 },
+        { header: 'Pages', key: 'pages', width: 10 },
+        { header: 'Livraison', key: 'delivery', width: 15 },
+        { header: 'Créé le', key: 'createdAt', width: 20 },
       ];
 
-      // Дані
       rows.forEach(row => {
         sheet.addRow(row);
       });
 
-      // Зберегти
       await workbook.xlsx.writeFile(filePath);
 
-      // Очистити чергу
       db.run(`DELETE FROM queue`, [], (deleteErr) => {
         if (deleteErr) return reject(deleteErr);
         resolve(`✅ Лист "${dateStr}" додано в queue-backup.xlsx, черга очищена.`);
