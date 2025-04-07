@@ -18,12 +18,10 @@ async function messageHandler(event, db) {
 
   const isAdmin = ADMIN_IDS.includes(senderId);
 
-  // 🕒 Графік роботи
   if (!isWithinWorkingHours() && !isAdmin && command !== '/start' && command !== '/') {
     return sendMessage(senderId, getWorkingHoursMessage());
   }
 
-  // ▶️ Стартове меню
   if (command === '/start' || command === '/') {
     return sendQuickReplies(
       senderId,
@@ -32,13 +30,11 @@ async function messageHandler(event, db) {
     );
   }
 
-  // 🛠️ Адмін-команди
   if (isAdmin) {
     const isHandled = await handleAdminCommand(command, senderId, db);
     if (isHandled) return;
   }
 
-  // 👤 Користувач
   await handleUserCommand(command, senderId, db);
 }
 

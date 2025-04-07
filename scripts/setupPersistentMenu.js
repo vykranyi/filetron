@@ -13,7 +13,7 @@ const setupPersistentMenu = async () => {
           locale: "default",
           composer_input_disabled: false,
           call_to_actions: [
-            // 🔹 Utilisateur
+            // user
             {
               type: "postback",
               title: "📥 Rejoindre la file",
@@ -29,7 +29,7 @@ const setupPersistentMenu = async () => {
               title: "🚫 Quitter la file",
               payload: "/annuler"
             },
-            // 🔧 Admin
+            // admin
             {
               type: "postback",
               title: "📋 Voir la file (admin)",

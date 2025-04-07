@@ -3,7 +3,6 @@ const axios = require('axios');
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 const FB_API = 'https://graph.facebook.com/v17.0/me/messages';
 
-// Загальний виклик API
 function callSendAPI(payload, label = 'sendAPI') {
   return axios.post(FB_API, payload, {
     params: { access_token: PAGE_ACCESS_TOKEN }
@@ -12,7 +11,6 @@ function callSendAPI(payload, label = 'sendAPI') {
   });
 }
 
-// Текстове повідомлення
 function sendMessage(recipientId, text) {
   return callSendAPI({
     recipient: { id: recipientId },
@@ -20,7 +18,6 @@ function sendMessage(recipientId, text) {
   }, 'sendMessage');
 }
 
-// Кнопки
 function sendQuickReplies(recipientId, text, replies = []) {
   const messageData = {
     recipient: { id: recipientId },
