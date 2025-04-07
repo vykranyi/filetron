@@ -1,87 +1,55 @@
-const db = require('../database');
+const sqlite3 = require('sqlite3').verbose();
 
-const addToQueue = (userId, userData, callback) => {
-  const timestamp = Date.now();
+// Додає користувача до черги
+function addToQueue(userId, userData, callback) {
+  const db = new sqlite3.Database('./data/queuebot.db');
 
-  db.run(`
-    INSERT INTO queue (userId, name, format, pages, delivery, timestamp)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `,
-    [userId, userData.name, userData.format, userData.pages, userData.delivery, timestamp],
+  const name = userData.name;
+  const format = userData.format;
+  const pages = userData.pages;
+  const delivery = userData.delivery;
+
+  db.run(
+    `INSERT INTO queue (userId, name, format, pages, delivery, createdAt)
+     VALUES (?, ?, ?, ?, ?, datetime('now'))`,
+    [userId, name, format, pages, delivery],
     function (err) {
       if (err) {
-        console.error('❌ Queue insert error:', err);
+        console.error('❌ Error inserting into queue:', err);
         return callback(null);
       }
 
-      // отримуємо позицію в черзі
-      db.get(
-        `SELECT COUNT(*) AS position FROM queue WHERE id <= ?`,
-        [this.lastID],
-        (err, row) => {
-          if (err) {
-            console.error('❌ Queue position error:', err);
-            return callback(null);
-          }
+      const newId = this.lastID;
 
-          callback({
-            id: String(this.lastID).padStart(3, '0'),
-            position: row.position,
-            eta: row.position * 5, // хвилини очікування
-          });
-        }
-      );
-    }
-  );
-};
-
-
-const getStatus = (userId, callback) => {
-  db.get(
-    `SELECT id FROM queue WHERE userId = ? ORDER BY id ASC LIMIT 1`,
-    [userId],
-    (err, userRow) => {
-      if (err || !userRow) return callback(null);
-
-      const userQueueId = userRow.id;
-
-      db.get(
-        `SELECT COUNT(*) AS position FROM queue WHERE id <= ?`,
-        [userQueueId],
-        (err, row) => {
+      db.all(
+        `SELECT id FROM queue ORDER BY id ASC`,
+        [],
+        (err, rows) => {
           if (err) return callback(null);
-
-          callback({
-            id: String(userQueueId).padStart(3, '0'),
-            position: row.position,
-            eta: row.position * 5,
-          });
+          const position = rows.findIndex(row => row.id === newId) + 1;
+          const eta = position * 5; // груба оцінка часу
+          callback({ id: newId, position, eta });
         }
       );
     }
   );
-};
+}
 
-const cancelFromQueue = (userId, callback) => {
-  db.run(
-    `DELETE FROM queue WHERE userId = ?`,
-    [userId],
-    function (err) {
-      if (err) {
-        console.error('❌ Помилка при видаленні з черги:', err);
-        return callback(false);
-      }
+// Видалити всі записи для користувача
+function cancelFromQueue(userId, callback) {
+  const db = new sqlite3.Database('./data/queuebot.db');
 
-      callback(this.changes > 0); // було щось видалено
+  db.run(`DELETE FROM queue WHERE userId = ?`, [userId], function (err) {
+    if (err) {
+      console.error('❌ Error deleting from queue:', err);
+      return callback(false);
     }
-  );
-};
 
+    return callback(this.changes > 0);
+  });
+}
 
-module.exports = { addToQueue, getStatus };
-module.exports = { addToQueue };
 module.exports = {
   addToQueue,
-  getStatus,
   cancelFromQueue
 };

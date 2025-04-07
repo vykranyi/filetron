@@ -13,20 +13,32 @@ const setupPersistentMenu = async () => {
           locale: "default",
           composer_input_disabled: false,
           call_to_actions: [
+            // 🔹 Utilisateur
             {
               type: "postback",
-              title: "📥 Долучитися",
-              payload: "/долучитися"
+              title: "📥 Rejoindre la file",
+              payload: "/rejoindre"
             },
             {
               type: "postback",
-              title: "📊 Мій статус",
-              payload: "/статус"
+              title: "📊 Mon statut",
+              payload: "/statut"
             },
             {
               type: "postback",
-              title: "🚫 Вийти з черги",
-              payload: "/відміна"
+              title: "🚫 Quitter la file",
+              payload: "/annuler"
+            },
+            // 🔧 Admin
+            {
+              type: "postback",
+              title: "📋 Voir la file (admin)",
+              payload: "/file"
+            },
+            {
+              type: "postback",
+              title: "✅ Appeler suivant",
+              payload: "/suivant"
             }
           ]
         }
@@ -34,9 +46,9 @@ const setupPersistentMenu = async () => {
     };
 
     const response = await axios.post(url, payload);
-    console.log('✅ Persistent menu updated:', response.data);
+    console.log('✅ Menu persistant mis à jour :', response.data);
   } catch (err) {
-    console.error('❌ Persistent menu error:', err.response?.data || err.message);
+    console.error('❌ Erreur de menu persistant :', err.response?.data || err.message);
   }
 };
 

@@ -1,66 +1,40 @@
 const axios = require('axios');
-const fs = require('fs');
-const FormData = require('form-data');
+
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
+const FB_API = 'https://graph.facebook.com/v17.0/me/messages';
 
-const sendMessage = async (recipientId, message) => {
-  try {
-    const url = `https://graph.facebook.com/v17.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`;
-    const payload = {
-      recipient: { id: recipientId },
-      message: { text: message }
-    };
+function sendMessage(recipientId, text) {
+  return axios.post(FB_API, {
+    recipient: { id: recipientId },
+    message: { text }
+  }, {
+    params: { access_token: PAGE_ACCESS_TOKEN }
+  }).catch(err => {
+    console.error('❌ sendMessage error:', err.response?.data || err.message);
+  });
+}
 
-    await axios.post(url, payload);
-    console.log(`✅ Message sent to ${recipientId}`);
-  } catch (err) {
-    console.error('❌ Send message error:', err.response?.data || err.message);
-  }
-};
+function sendQuickReplies(recipientId, text, replies) {
+  const messageData = {
+    recipient: { id: recipientId },
+    message: {
+      text,
+      quick_replies: replies.map(btn => ({
+        content_type: 'text',
+        title: btn.title,
+        payload: btn.payload
+      }))
+    }
+  };
 
-const sendImage = async (recipientId, imagePath) => {
-  try {
-    const url = `https://graph.facebook.com/v17.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`;
-
-    const form = new FormData();
-    form.append('recipient', JSON.stringify({ id: recipientId }));
-    form.append('message', JSON.stringify({ attachment: { type: 'image', payload: {} } }));
-    form.append('filedata', fs.createReadStream(imagePath));
-
-    await axios.post(url, form, {
-      headers: form.getHeaders()
-    });
-
-    console.log(`✅ Image sent to ${recipientId}`);
-  } catch (err) {
-    console.error('❌ Send image error:', err.response?.data || err.message);
-  }
-};
-
-const sendQuickReplies = async (recipientId, text, replies) => {
-  if (!replies?.length) {
-    return sendMessage(recipientId, text);
-  }
-
-  try {
-    const url = `https://graph.facebook.com/v17.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`;
-    const payload = {
-      recipient: { id: recipientId },
-      message: {
-        text,
-        quick_replies: replies.map(reply => ({
-          content_type: 'text',
-          title: reply.title,
-          payload: reply.payload
-        }))
-      }
-    };
-
-    await axios.post(url, payload);
-    console.log(`✅ Quick replies sent to ${recipientId}`);
-  } catch (err) {
+  return axios.post(FB_API, messageData, {
+    params: { access_token: PAGE_ACCESS_TOKEN }
+  }).catch(err => {
     console.error('❌ sendQuickReplies error:', err.response?.data || err.message);
-  }
-};
+  });
+}
 
-module.exports = { sendMessage, sendImage, sendQuickReplies };
+module.exports = {
+  sendMessage,
+  sendQuickReplies
+};
