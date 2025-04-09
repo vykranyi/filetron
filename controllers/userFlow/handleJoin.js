@@ -1,3 +1,7 @@
+// Імпортуємо необхідні функції
+const { sendMessage, sendQuickReplies } = require('../services/messengerService');
+const { getUserNameFromFacebook } = require('../utils/fbProfile');
+
 async function handleJoin(senderId, db) {
   return db.get(
     `SELECT COUNT(*) as count FROM queue WHERE userId = ?`,
